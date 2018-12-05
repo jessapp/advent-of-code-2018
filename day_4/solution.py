@@ -5,22 +5,14 @@ def get_minute(line):
     time = words[1][:-1]
     return int(time.split(':')[1])
 
-def get_best(d):
-    best = None
+def get_most_frequent(d):
+    most_frequent = None
     for k,v in d.items():
-     if best is None or v > d[best]:
-         best = k
-    return best
+     if most_frequent is None or v > d[most_frequent]:
+         most_frequent = k
+    return most_frequent
 
-def get_worst(d):
-    worst = None
-    for k, v in d.items():
-        if worst is None or v < d[worst]:
-            worst = k
-    return worst 
-
-
-def part_1():
+def parse_text_input():
     text_input = open('input.txt', "r")
     lines = []
 
@@ -28,8 +20,11 @@ def part_1():
         lines.append(line.rstrip())
 
     lines.sort()
-    guard_sleep_sched = defaultdict(int)
-    guard_sleep_count = defaultdict(int)
+    return lines
+
+def part_1():
+    lines = parse_text_input()
+    guard_sleep_sched = defaultdict(list)
 
     guard = None
     asleep = None
@@ -41,23 +36,56 @@ def part_1():
             asleep = None
         elif 'falls asleep' in line:
             asleep = minute
-            print("falls asleep at", asleep)
+        elif 'wakes up' in line:
+            for i in range(asleep, minute):
+                guard_sleep_sched[guard].append(i)
+
+
+    worst_guard = None
+    most_slept = 0
+
+    for guard, minutes_slept in guard_sleep_sched.items():
+        if len(minutes_slept) > most_slept:
+            most_slept = len(minutes_slept)
+            worst_guard = guard
+
+
+    minute_count = {}
+    for minute in guard_sleep_sched[worst_guard]:
+        minute_count[minute] = minute_count.get(minute, 0) + 1
+
+
+    most_slept_minute = None
+    most_slept_count = 0
+
+    for minute, count in minute_count.items():
+        if count > most_slept_count:
+            most_slept_minute = minute
+            most_slept_count = count
+
+    return most_slept_minute * worst_guard
+
+
+def part_2():
+    lines = parse_text_input()
+    guard_sleep_sched = defaultdict(int)
+
+    guard = None
+    asleep = None
+
+    for line in lines:
+        minute = get_minute(line)
+        if 'begins shift' in line:
+            guard = int(line.split()[3][1:])
+            asleep = None
+        elif 'falls asleep' in line:
+            asleep = minute
         elif 'wakes up' in line:
             for i in range(asleep, minute):
                 guard_sleep_sched[(guard, i)] += 1
-                guard_sleep_count[guard] += 1
 
-    worst_guard = get_worst(guard_sleep_count)
+    guard_id, sleep_minute = get_most_frequent(guard_sleep_sched)
+    return guard_id * sleep_minute
 
-    most_slept_min = None
-    most_slept_count = 0
 
-    for k, v in guard_sleep_sched.items():
-        guard_id, minute = k
-        if guard_id == worst_guard:
-            print(k)
-            if v > most_slept_count:
-                most_slept_min = minute
-                most_slept_count = v
 
-    return worst_guard * most_slept_min
