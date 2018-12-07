@@ -1,17 +1,16 @@
-def parse_input():
-	letters = []
-	text_input = open('input.txt', "r")
-	for line in text_input:
-		for letter in line.rstrip():
-			letters.append(letter)
-	return letters
+import string
+import re
 
-# polymer_list = ["C", "c", "v", "V", "e", "G", "g", "R", "b", "B", "x", "C", "c", "X", "b", "J", "t","T"]
-# polymer_list = ["d", "a", "b", "A", "c", "C", "a", "C", "B", "A", "c", "C", "c", "a", "D", "A"]
+# def parse_input():
+# 	letters = []
+# 	text_input = open('input.txt', "r")
+# 	for line in text_input:
+# 		for letter in line.rstrip():
+# 			letters.append(letter)
+# 	return letters
 
-
-def are_opposites(first_letter, second_letter):
-	return first_letter == second_letter.lower() or second_letter == first_letter.lower()
+# def are_opposites(first_letter, second_letter):
+# 	return first_letter == second_letter.lower() or second_letter == first_letter.lower()
 
 
 # def part_one():
@@ -40,17 +39,42 @@ def are_opposites(first_letter, second_letter):
 # 			first_index += 1
 
 
+# def part_one():
+# 	polymer_list = parse_input()
+# 	return_list = []
+# 	for letter in polymer_list:
+# 		if return_list and are_opposites(letter, return_list[-1]):
+# 			return_list.pop()
+# 		else:
+# 			return_list.append(letter)
 
-def part_one():
-	polymer_list = parse_input()
-	return_list = []
-	for letter in polymer_list:
-		if return_list and are_opposites(letter, return_list[-1]):
-			return_list.pop()
-		else:
-			return_list.append(letter)
-
-	return len(return_list)
+# 	return len(return_list)
 
 
-# 11848 - too high
+# part 1
+def regex(polymer):
+	lower = string.ascii_lowercase
+	upper = string.ascii_uppercase
+	pat = "|".join(
+	    a + b for a, b in list(zip(lower, upper)) + list(zip(upper, lower)))
+	ss = re.sub(pat, "", polymer)
+	while polymer != ss:
+	    polymer = ss
+	    ss = re.sub(pat, "", polymer)
+
+	return len(polymer)
+
+
+def part_two():
+	shortest_length = None
+
+	for x in string.ascii_lowercase:
+		text_input = open("input.txt").read().strip()
+		text_input = text_input.replace(x, "")
+		text_input = text_input.replace(x.upper(), "")
+		reduced_length = regex(text_input)
+
+		if not shortest_length or reduced_length < shortest_length:
+			shortest_length = reduced_length
+
+	return shortest_length
